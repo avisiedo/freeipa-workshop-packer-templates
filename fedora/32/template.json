@@ -1,0 +1,183 @@
+{
+  "builders": [
+    {
+      "boot_command": [
+        "<tab> linux ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `ks_path`}}<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "cpus": "{{ user `cpus` }}",
+      "disk_size": "{{user `disk_size`}}",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "guest_additions_url": "{{ user `guest_additions_url` }}",
+      "guest_os_type": "Fedora_64",
+      "hard_drive_interface": "sata",
+      "headless": "{{ user `headless` }}",
+      "http_directory": "{{user `http_directory`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `iso_name`}}",
+      "memory": "{{ user `memory` }}",
+      "output_directory": "{{ user `build_directory` }}/packer-{{user `template`}}-virtualbox",
+      "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_timeout": "10000s",
+      "ssh_username": "vagrant",
+      "type": "virtualbox-iso",
+      "virtualbox_version_file": ".vbox_version",
+      "vm_name": "{{ user `template` }}",
+      "vrdp_bind_address": "{{ user `vrdp_bind_address` }}"
+    },
+    {
+      "boot_command": [
+        "<tab> linux ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `ks_path`}}<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "cpus": "{{ user `cpus` }}",
+      "disk_size": "{{user `disk_size`}}",
+      "guest_os_type": "fedora-64",
+      "headless": "{{ user `headless` }}",
+      "http_directory": "{{user `http_directory`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `iso_name`}}",
+      "memory": "{{ user `memory` }}",
+      "output_directory": "{{ user `build_directory` }}/packer-{{user `template`}}-vmware",
+      "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_timeout": "10000s",
+      "ssh_username": "vagrant",
+      "tools_upload_flavor": "linux",
+      "type": "vmware-iso",
+      "vm_name": "{{ user `template` }}",
+      "vmx_data": {
+        "cpuid.coresPerSocket": "1",
+        "ethernet0.pciSlotNumber": "32"
+      },
+      "vmx_remove_ethernet_interfaces": true
+    },
+    {
+      "boot_command": [
+        "<tab> linux ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `ks_path`}}<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "cpus": "{{ user `cpus` }}",
+      "disk_size": "{{user `disk_size`}}",
+      "guest_os_type": "fedora-core",
+      "http_directory": "{{user `http_directory`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `iso_name`}}",
+      "memory": "{{ user `memory` }}",
+      "output_directory": "{{ user `build_directory` }}/packer-{{user `template`}}-parallels",
+      "parallels_tools_flavor": "lin",
+      "prlctl_version_file": ".prlctl_version",
+      "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_timeout": "10000s",
+      "ssh_username": "vagrant",
+      "type": "parallels-iso",
+      "vm_name": "{{ user `template` }}"
+    },
+    {
+      "boot_command": [
+        "<tab> linux ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `ks_path`}}<enter><wait>"
+      ],
+      "accelerator": "kvm",
+      "boot_wait": "10s",
+      "disk_compression": true,
+      "cpus": "{{ user `cpus` }}",
+      "disk_size": "{{user `disk_size`}}G",
+      "headless": "{{ user `headless` }}",
+      "http_directory": "{{user `http_directory`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_url": "{{user `mirror`}}/{{user `mirror_directory`}}/{{user `iso_name`}}",
+      "memory": "{{ user `memory` }}",
+      "output_directory": "{{ user `build_directory` }}/packer-{{user `template`}}-qemu",
+      "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_timeout": "10000s",
+      "ssh_username": "vagrant",
+      "type": "qemu",
+      "net_device": "virtio-net",
+      "disk_interface": "virtio",
+      "vm_name": "{{ user `template` }}",
+      "vnc_bind_address": "{{ user `vrdp_bind_address` }}",
+      "vnc_use_password": false
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "shell-local",
+      "inline": ["echo Pushing image to Vagrant Cloud"]
+    },
+    [
+      {
+        "type": "vagrant",
+        "output": "{{ user `build_directory` }}/{{user `box_basename`}}.{{.Provider}}.box"
+      },
+      {
+        "type": "vagrant-cloud",
+        "box_tag": "avisiedo/freeipa-fd32",
+        "version": "32.0.0",
+        "access_token": "{{user `cloud_token`}}",
+        "keep_input_artifact": true
+      }
+    ]
+  ],
+  "provisioners": [
+    {
+      "environment_vars": [
+        "HOME_DIR=/home/vagrant",
+        "http_proxy={{user `http_proxy`}}",
+        "https_proxy={{user `https_proxy`}}",
+        "no_proxy={{user `no_proxy`}}"
+      ],
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "expect_disconnect": true,
+      "scripts": [
+        "{{template_dir}}/scripts/swap.sh",
+        "{{template_dir}}/scripts/fix-slow-dns.sh",
+        "{{template_dir}}/scripts/build-tools.sh",
+        "{{template_dir}}/scripts/install-supporting-packages.sh",
+        "{{template_dir}}/../../_common/motd.sh",
+        "{{template_dir}}/../../_common/sshd.sh",
+        "{{template_dir}}/../../_common/virtualbox.sh",
+        "{{template_dir}}/../../_common/vmware.sh",
+        "{{template_dir}}/../../_common/parallels.sh",
+        "{{template_dir}}/../../_common/vagrant.sh",
+        "{{template_dir}}/scripts/cleanup.sh",
+        "{{template_dir}}/../../_common/minimize.sh",
+        "{{template_dir}}/scripts/ipa.sh"
+      ],
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "arch": "64",
+    "box_basename": "fedora-32",
+    "build_directory": "../../builds",
+    "build_timestamp": "{{isotime \"20060102150405\"}}",
+    "cpus": "4",
+    "disk_size": "4",
+    "git_revision": "__unknown_git_revision__",
+    "guest_additions_url": "",
+    "headless": "",
+    "http_directory": "{{template_dir}}/http",
+    "http_proxy": "{{env `http_proxy`}}",
+    "https_proxy": "{{env `https_proxy`}}",
+    "iso_checksum": "cd2aefdbe1b5042865a39c49d32f5d21a9537c719aa87dde34d08ca06bc6681c",
+    "iso_name": "Fedora-Server-dvd-x86_64-32-1.6.iso",
+    "ks_path": "ks-fedora.cfg",
+    "memory": "4096",
+    "mirror": "http://download.fedoraproject.org/pub/fedora/linux",
+    "mirror_directory": "releases/32/Server/x86_64/iso",
+    "name": "fedora-32",
+    "no_proxy": "{{env `no_proxy`}}",
+    "template": "freeipa-f32-x86_64",
+    "version": "TIMESTAMP",
+    "vrdp_bind_address": "0.0.0.0",
+    "cloud_token": "HEIdzyyw1CRdPA.atlasv1.2izxzl8jRpPWOTt0J0XSEAjQDH2NoSvIMlBzvJTtppBmLdvXmh4nvjWEnnDw1bksyEg"
+  }
+}
+
