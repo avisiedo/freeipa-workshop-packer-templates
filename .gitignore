@@ -1,2 +1,6 @@
+/.vscode
 /builds
 /**/packer_cache
+/**/.template.json
+/**/.variables.json
+/credentials.env

@@ -118,10 +118,11 @@
       },
       {
         "type": "vagrant-cloud",
-        "box_tag": "avisiedo/freeipa-fd32",
-        "version": "32.0.0",
+        "box_tag": "{{user `cloud_boxtag`}}",
+        "version": "{{user `version`}}",
         "access_token": "{{user `cloud_token`}}",
-        "keep_input_artifact": true
+        "keep_input_artifact": true,
+        "version_description": "Freeipa base image virtual macine for freeipa-workshop repository"
       }
     ]
   ],
@@ -154,15 +155,15 @@
     }
   ],
   "variables": {
+    "cloud_token": "{{env `VAGRANT_CLOUD_TOKEN`}}",
+    "cloud_boxtag": "{{env `VAGRANT_CLOUD_BOXTAG`}}",
+    "box_basename": "freeipa-workshop",
     "arch": "64",
-    "box_basename": "fedora-32",
     "build_directory": "../../builds",
-    "build_timestamp": "{{isotime \"20060102150405\"}}",
     "cpus": "4",
     "disk_size": "4",
-    "git_revision": "__unknown_git_revision__",
     "guest_additions_url": "",
-    "headless": "",
+    "headless": "true",
     "http_directory": "{{template_dir}}/http",
     "http_proxy": "{{env `http_proxy`}}",
     "https_proxy": "{{env `https_proxy`}}",
@@ -176,8 +177,7 @@
     "no_proxy": "{{env `no_proxy`}}",
     "template": "freeipa-f32-x86_64",
     "version": "TIMESTAMP",
-    "vrdp_bind_address": "0.0.0.0",
-    "cloud_token": "HEIdzyyw1CRdPA.atlasv1.2izxzl8jRpPWOTt0J0XSEAjQDH2NoSvIMlBzvJTtppBmLdvXmh4nvjWEnnDw1bksyEg"
+    "vrdp_bind_address": "0.0.0.0"
   }
 }
 

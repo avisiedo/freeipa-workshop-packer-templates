@@ -37,6 +37,3 @@ sudo sh -c "cat >/etc/httpd/conf.d/app.conf" <<EOF
     </Directory>
 </VirtualHost>
 EOF
-
-mount
-df
